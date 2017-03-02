@@ -18,6 +18,6 @@ A fluid and mobile friendly BiPartite Chart for Qlik Sense
 - type the headers for each column
 - insert comma separated hex values for the color palette 
 
-![SenseUI - BiPartite Chart](/preview3.png?raw=true "SenseUI - BiPartite Chart")
+![SenseUI - BiPartite Chart](/preview.png?raw=true "SenseUI - BiPartite Chart")
 
 [Download zip file](https://github.com/yianni-ververis/SenseUI-BiPartite/archive/master.zip)
