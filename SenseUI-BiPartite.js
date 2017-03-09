@@ -106,7 +106,7 @@ define( [
 	// Get Engine API app for Selections
 	me.app = qlik.currApp(this);
 
-	me.paint = ($element, layout) => {
+	me.paint = function ($element, layout) {
 		let vars = $.extend({
 			v: '1.1',
 			id: layout.qInfo.qId,
@@ -143,6 +143,56 @@ define( [
 		}, layout.vars);	
 		vars.isCreated = $(`#${vars.chart.id}`).length;
 		vars.colors = (vars.colors) ? vars.colors.split(",") :  ["#A6CEE3","#1F78B4","#B2DF8A","#33A02C","#FB9A99","#E31A1C","#FDBF6F","#FF7F00","#CAB2D6","#6A3D9A","#FFFF99","#B15928"];
+// console.log(vars.this)
+		// Make sure we have all rows
+		const columns = layout.qHyperCube.qSize.qcx;
+		const totalheight = layout.qHyperCube.qSize.qcy;  
+		const pageheight = Math.floor(10000 / columns);  
+		const numberOfPages = Math.ceil(pageheight / totalheight);
+		
+		console.log(totalheight);
+		
+		if (numberOfPages>0) {
+			// var promises = Array.apply(null, Array(numberOfPages)).map(function(layout.qHyperCube.qDataPages[0].qMatrix, index) {  
+			// var page = {  
+			// 		qTop: (pageheight * index) + index,  
+			// 		qLeft: 0,  
+			// 		qWidth: columns,  
+			// 		qHeight: pageheight,  
+			// 		index: index  
+			// 	};                                                                                             
+			// 	// return model.getHyperCubeData('/qHyperCubeDef', [page]);  
+			// 	return this.backendApi.getData( page )
+			// }, this);                                                                  
+			// Promise.all(promises).then(function(data) {  
+			// 	console.log(data)
+			// 	// for (var j=0; j<data.length; j++) {  
+			// 	// 	for (var k=0; k<data[j].qDataPages[0].qMatrix.length; k++) {                                                         
+			// 	// 		qTotalData.push(data[j].qDataPages[0].qMatrix[k])  
+			// 	// 	}  
+			// 	// }  
+			// 	// deferred.resolve(qTotalData);  
+			// });  
+			var lastrow = 0;
+			//loop through the rows we have and render
+			this.backendApi.eachDataRow( function ( rownum, row ) {
+				lastrow = rownum;
+				//do something with the row..
+			});
+			if(totalheight > lastrow +1){
+				//we havent got all the rows yet, so get some more, 1000 rows
+				var requestPage = [{
+					qTop: lastrow + 1,
+					qLeft: 0,
+					qWidth: columns,
+					qHeight: Math.min( 1000, totalheight - lastrow )
+				}];
+				this.backendApi.getData( requestPage ).then( function ( dataPages ) {
+					//when we get the result trigger paint again
+					vars.this.paint($element, layout);
+				});
+			}
+		}
 
 		if ( $element.width() < 400 ) { 
 			vars.chart.display.value = false;
@@ -177,11 +227,12 @@ define( [
 		}
 		vars.chart.bb = vars.width - ((vars.chart.margin.l*2)+(vars.chart.b*2));
 
-		$.each(layout.qHyperCube.qDataPages[0].qMatrix, function(key, value) {
-			if (value[0].qText !== '-' && value[1].qText !== '-' && value[2].qNum>0) { //value[3].qNum && 
-				// vars.data[key] = [value[0].qText, value[1].qText, value[3].qNum, value[2].qNum];
-				vars.data[key] = [value[0].qText, value[1].qText, value[2].qNum];
-			}
+		$.each(layout.qHyperCube.qDataPages, function(key1, value1) {
+			$.each(value1.qMatrix, function(key2, value2) {
+				if (value2[0].qText !== '-' && value2[1].qText !== '-' && value2[2].qNum>0) {
+					vars.data.push([value2[0].qText, value2[1].qText, value2[2].qNum]);
+				}
+			});
 		});
 
 		// CSS
