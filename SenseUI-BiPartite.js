@@ -16,7 +16,7 @@ define( [
 	"jquery",
 	"./d3.min",
 	"./biPartite"
-],
+], 
 (qlik, $, d3) => {
 	// Define properties
 	var me = {
